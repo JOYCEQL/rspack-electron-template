@@ -2,19 +2,20 @@
 	"name": "rspack-electron-template",
 	"private": true,
 	"version": "1.0.0",
-	"main": "electron/main.js",
 	"scripts": {
-		"dev": "rsbuild dev",
-		"build": "rsbuild build",
-		"preview": "rsbuild preview",
-		"electron": "wait-on http://localhost:3000 && electron .",
-		"electron-dev": "concurrently \"pnpm dev\" \"pnpm electron\"",
-		"electron-build": "pnpm build && electron-builder"
+		"vue:dev": "pnpm -F vue  dev",
+		"react:dev": "pnpm -F react dev",
+		"vue:build": "pnpm -F vue build",
+		"react:build": "pnpm -F react  build",
+		"vue:preview": "pnpm -F react  preview",
+		"electron-dev:vue": "pnpm -F vue electron-dev",
+		"electron-build:vue": "pnpm -F vue electron-build",
+		"electron-dev:react": "pnpm -F react electron-dev",
+		"electron-build:react": "pnpm -F react electron-build"
 	},
 	"dependencies": {
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"electron-is-dev": "^2.0.0"
+		"react-dom": "^18.3.1"
 	},
 	"devDependencies": {
 		"@rsbuild/core": "^1.0.13",
@@ -27,12 +28,5 @@
 		"electron-builder": "^23.6.0",
 		"wait-on": "^7.0.1",
 		"@biomejs/biome": "^1.9.3"
-	},
-	"build": {
-		"appId": "com.example.rspack-electron-app",
-		"files": ["dist/**/*", "electron/**/*", "package.json"],
-		"directories": {
-			"output": "release"
-		}
 	}
 }

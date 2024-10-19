@@ -1,7 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
-
 function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
@@ -11,7 +10,6 @@ function createWindow() {
 			contextIsolation: false,
 		},
 	});
-
 	if (isDev) {
 		win.loadURL('http://localhost:3000');
 	} else {
