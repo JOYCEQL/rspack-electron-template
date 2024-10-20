@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            background: transparent; /* 红色半透明背景 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* 允许点击穿透 */
+        }
+        .border {
+            border: 5px solid red;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="border"></div>
+</body>
+</html>
