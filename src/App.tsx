@@ -1,4 +1,4 @@
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Pause, Play, Save } from "lucide-react";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import "./screen.css";
 
@@ -11,6 +11,7 @@ function ScreenRecorder() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const videoRef = useRef(null);
@@ -20,10 +21,9 @@ function ScreenRecorder() {
   const animationFrameRef = useRef(null);
   const playbackRef = useRef({ isPlaying: false }).current;
 
-  const FPS = 30;
+  const FPS = 60;
   const frameInterval = 1000 / FPS;
 
-  // startRecording function - no changes
   const startRecording = async () => {
     const sources = await window.electronAPI.getDesktopSources();
     try {
@@ -44,11 +44,13 @@ function ScreenRecorder() {
       const options = {
         videoBitsPerSecond: 8000000, 
         audioBitsPerSecond: 128000,
-        mimeType: "video/webm;"
+        mimeType: 'video/webm;codecs=vp8', 
       };
+  
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
-
+      
+      
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
@@ -63,7 +65,6 @@ function ScreenRecorder() {
     }
   };
 
-  // stopRecording function - no changes
   const stopRecording = () => {
     if (mediaRecorderRef.current && streamRef.current) {
       mediaRecorderRef.current.stop();
@@ -83,18 +84,31 @@ function ScreenRecorder() {
     }
   };
 
-  // saveRecording function - no changes
-  const saveRecording = () => {
-    const blob = new Blob(recordedChunksRef.current);
+  const saveRecording = async () => {
+    if (frames.length === 0) {
+      console.error("No frames to save");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+ 
+    const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     document.body.appendChild(a);
-    a.style = "display: none";
+    a.style = 'display: none';
     a.href = url;
-    a.download = "screen-recording.webm";
+    a.download = `screen-recording-${new Date().toISOString()}.webm`;
     a.click();
     window.URL.revokeObjectURL(url);
-    setRecordedChunks([]);
+    document.body.removeChild(a);
+    setIsSaving(false);
+    } catch (error) {
+      console.error('保存视频时出错:', error);
+      setIsSaving(false);
+    }
   };
 
   const processRecordedVideo = async () => {
@@ -143,14 +157,10 @@ function ScreenRecorder() {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d", { alpha: false });
 
-        // 设置 canvas 分辨率
-        const dpr = window.devicePixelRatio || 1;
         const displayWidth = canvas.width;
         const displayHeight = canvas.height;
         canvas.width = displayWidth;
         canvas.height = displayHeight;
-
-        // 设置 canvas 的 CSS 尺寸
 
         let currentTime = 0;
         const frameArray = [];
@@ -160,24 +170,12 @@ function ScreenRecorder() {
           if (processedFrames >= totalFrames) {
             setFrames(frameArray);
             setCurrentFrame(0);
-            // 显示第一帧作为封面
             if (frameArray.length > 0) {
               const img = new Image();
               img.src = frameArray[0].image;
               img.onload = () => {
-                ctx.clearRect(
-                  0,
-                  0,
-                  canvas.width,
-                  canvas.height
-                );
-                ctx.drawImage(
-                  img,
-                  0,
-                  0,
-                  canvas.width,
-                  canvas.height
-                );
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
               };
             }
             document.body.removeChild(video);
@@ -186,13 +184,7 @@ function ScreenRecorder() {
 
           video.currentTime = currentTime;
           video.onseeked = () => {
-            ctx.drawImage(
-              video,
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const frameData = canvas.toDataURL("image/jpeg", 1);
             frameArray.push({
               image: frameData,
@@ -221,13 +213,11 @@ function ScreenRecorder() {
         return 0;
       }
 
-      // 更新画布
       const canvas = canvasRef.current;
       if (canvas) {
-        const dpr = window.devicePixelRatio || 1;
         const ctx = canvas.getContext("2d", { alpha: false });
-        const displayWidth = canvas.width ;
-        const displayHeight = canvas.height ;
+        const displayWidth = canvas.width;
+        const displayHeight = canvas.height;
 
         const img = new Image();
         img.src = frames[nextFrame].image;
@@ -239,7 +229,6 @@ function ScreenRecorder() {
       return nextFrame;
     });
 
-    // 使用 setTimeout 控制帧率
     animationFrameRef.current = setTimeout(() => {
       requestAnimationFrame(playFrame);
     }, frameInterval);
@@ -247,7 +236,6 @@ function ScreenRecorder() {
 
   const togglePlayback = useCallback(() => {
     if (playbackRef.isPlaying) {
-      // 停止播放
       playbackRef.isPlaying = false;
       if (animationFrameRef.current) {
         clearTimeout(animationFrameRef.current);
@@ -255,14 +243,11 @@ function ScreenRecorder() {
       }
       setIsPlaying(false);
     } else {
-      // 开始播放
       playbackRef.isPlaying = true;
       setIsPlaying(true);
       playFrame();
     }
   }, [playFrame]);
-
-  
 
   const handleTimelineClick = (e) => {
     if (playbackRef.isPlaying) {
@@ -279,7 +264,6 @@ function ScreenRecorder() {
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const frameIndex = Math.floor(percentage * (frames.length - 1));
-    const dpr = window.devicePixelRatio || 1;
     setCurrentFrame(frameIndex);
 
     if (frames[frameIndex]) {
@@ -288,19 +272,8 @@ function ScreenRecorder() {
       const img = new Image();
       img.src = frames[frameIndex].image;
       img.onload = () => {
-        ctx.clearRect(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
     }
   };
@@ -329,80 +302,6 @@ function ScreenRecorder() {
     return <div className="timeline-ruler">{marks}</div>;
   };
 
-  const skipForward = () => {
-    if (playbackRef.isPlaying) {
-      playbackRef.isPlaying = false;
-      if (animationFrameRef.current) {
-        clearTimeout(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      setIsPlaying(false);
-    }
-
-    setCurrentFrame((prev) => {
-      const nextFrame = Math.min(prev + 10, frames.length - 1);
-      if (frames[nextFrame]) {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        const img = new Image();
-        img.src = frames[nextFrame].image;
-        img.onload = () => {
-          ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
-        };
-      }
-      return nextFrame;
-    });
-  };
-
-  const skipBackward = () => {
-    if (playbackRef.isPlaying) {
-      playbackRef.isPlaying = false;
-      if (animationFrameRef.current) {
-        clearTimeout(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      setIsPlaying(false);
-    }
-
-    setCurrentFrame((prev) => {
-      const nextFrame = Math.max(prev - 10, 0);
-      if (frames[nextFrame]) {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        const img = new Image();
-        img.src = frames[nextFrame].image;
-        img.onload = () => {
-          ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height 
-          );
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
-        };
-      }
-      return nextFrame;
-    });
-  };
-
   useEffect(() => {
     return () => {
       playbackRef.isPlaying = false;
@@ -425,9 +324,7 @@ function ScreenRecorder() {
     if (!seconds || isNaN(seconds)) return "00:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -435,20 +332,14 @@ function ScreenRecorder() {
       {isEditing ? (
         <div className="editor-container">
           <div className="preview-container">
-            <canvas ref={canvasRef}  height={'auto'} className="video-canvas" />
+            <canvas ref={canvasRef} height={'auto'} className="video-canvas" />
 
             <div className="controls">
-              <button
-                onClick={skipBackward}
-                className="control-button"
-                title="Back 10 frames"
-              >
-                <SkipBack className="icon" />
-              </button>
               <button
                 onClick={togglePlayback}
                 className="play-button"
                 title={isPlaying ? "Pause" : "Play"}
+                disabled={isSaving}
               >
                 {isPlaying ? (
                   <Pause className="icon" />
@@ -457,11 +348,13 @@ function ScreenRecorder() {
                 )}
               </button>
               <button
-                onClick={skipForward}
-                className="control-button"
-                title="Forward 10 frames"
+                onClick={saveRecording}
+                className="save-button"
+                disabled={isSaving}
+                title="Save Recording"
               >
-                <SkipForward className="icon" />
+                <Save className="icon" />
+                {isSaving ? "Saving..." : "Save"}
               </button>
               <span className="time-display">
                 {formatTime(getCurrentTime())} / {formatTime(duration)}
@@ -476,9 +369,7 @@ function ScreenRecorder() {
                 {frames.map((frame, index) => (
                   <div
                     key={index}
-                    className={`frame-preview ${
-                      currentFrame === index ? "active" : ""
-                    }`}
+                    className={`frame-preview ${currentFrame === index ? "active" : ""}`}
                     style={{
                       maxWidth: `${100 / Math.min(20, frames.length)}%`
                     }}
@@ -495,9 +386,7 @@ function ScreenRecorder() {
               <div
                 className="playhead"
                 style={{
-                  left: `${
-                    (currentFrame / Math.max(frames.length - 1, 1)) * 100
-                  }%`
+                  left: `${(currentFrame / Math.max(frames.length - 1, 1)) * 100}%`
                 }}
               />
             </div>
@@ -513,11 +402,6 @@ function ScreenRecorder() {
           {recording && (
             <button onClick={stopRecording} className="stop-button">
               Stop Recording
-            </button>
-          )}
-          {recordedChunks.length > 0 && (
-            <button onClick={saveRecording} className="save-button">
-              Save Recording
             </button>
           )}
         </div>
