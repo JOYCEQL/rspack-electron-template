@@ -1,0 +1,341 @@
+.screen-recorder {
+  width: 100%;
+  background-color: #1a1a1a;
+  min-height: 100vh;
+  padding: 20px;
+  color: #fff;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* 控制栏样式 */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  transition: opacity 0.3s ease;
+}
+
+.preview-container:hover .controls {
+  opacity: 1;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.play-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background-color: #2563eb;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.play-button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.1);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #fff;
+  min-width: 100px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 时间轴区域 */
+.timeline-container {
+  background-color: #2d2d2d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.timeline {
+  position: relative;
+  height: 100px;
+  background-color: #3d3d3d;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.frames-container {
+  display: flex;
+  height: 100%;
+  position: relative;
+}
+
+.frame-preview {
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.frame-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.frame-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.frame-preview:hover .frame-image {
+  opacity: 1;
+}
+
+.playhead {
+  position: absolute;
+  top: -10px;
+  width: 2px;
+  height: calc(100% + 20px);
+  background-color: #2563eb;
+  pointer-events: none;
+  transition: left 0.1s linear;
+  z-index: 10;
+}
+
+.playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #2563eb;
+  border-radius: 50%;
+}
+
+.playhead::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #2563eb;
+  border-radius: 50%;
+}
+
+/* 录制控制按钮 */
+.recording-controls {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.record-button,
+.stop-button,
+.save-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.record-button {
+  background-color: #2563eb;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.record-button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.stop-button {
+  background-color: #dc2626;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.stop-button:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.save-button {
+  background-color: #059669;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+}
+
+.save-button:hover {
+  background-color: #047857;
+  transform: translateY(-1px);
+}
+
+/* 时间刻度 */
+.timeline-ruler {
+  height: 20px;
+  position: relative;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.timeline-ruler-mark {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.timeline-ruler-mark.major {
+  height: 12px;
+}
+
+.timeline-ruler-mark.minor {
+  height: 8px;
+}
+
+.timeline-ruler-text {
+  position: absolute;
+  bottom: 14px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 添加时间刻度的标记 */
+.timeline-container {
+  position: relative;
+}
+
+.timeline-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+}
+
+
+
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.play-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  background-color: #2563eb;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.play-button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.time-display {
+  font-family: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
+  font-size: 16px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  min-width: 120px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* 视频预览区域样式优化 */
+.preview-container {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  /* overflow: hidden; */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.video-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}

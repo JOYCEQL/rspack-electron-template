@@ -16,6 +16,7 @@
 		"@ffmpeg/util": "^0.12.1",
 		"electron-is-dev": "^2.0.0",
 		"ffmpeg": "^0.0.4",
+		"lucide-react": "^0.453.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1"
 	},
@@ -33,7 +34,11 @@
 	},
 	"build": {
 		"appId": "com.example.rspack-electron-app",
-		"files": ["dist/**/*", "electron/**/*", "package.json"],
+		"files": [
+			"dist/**/*",
+			"electron/**/*",
+			"package.json"
+		],
 		"directories": {
 			"output": "release"
 		}
